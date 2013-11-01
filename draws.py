@@ -58,7 +58,7 @@ class Draw(object):
         box.refresh()
         self.box = box
 
-    def __winner(self, name):
+    def __winner(self):
         maxh, maxw = self.screen.getmaxyx()
 
         for i in range(1, self.width - 10)[::2]:
@@ -69,7 +69,8 @@ class Draw(object):
             box.refresh()
             time.sleep(0.01)
 
-        box.addstr(1, 1, name)
+        self.users = [user for user in self.users if user != self.winner]
+        box.addstr(1, 1, self.winner['name'])
         box.refresh()
 
     def __logo(self):
@@ -81,10 +82,10 @@ class Draw(object):
 
     def __print(self):
         for i in range(self.lines):
-            winner_name = self.users[(self.start + i) % len(self.users)]['name']
-            self.box.addstr(i + 1, 1, winner_name.center(self.width, ' '), self.active_color if self.active_line == i else self.color)
+            winner = self.users[(self.start + i) % len(self.users)]
+            self.box.addstr(i + 1, 1, winner['name'].center(self.width, ' '), self.active_color if self.active_line == i else self.color)
             if self.active_line == i:
-                self.winner_name = winner_name
+                self.winner = winner
         self.box.refresh()
 
     def __draw(self):
@@ -102,7 +103,7 @@ class Draw(object):
                 time.sleep(1 / speed / 10)
 
         time.sleep(1)
-        self.__winner(self.winner_name)
+        self.__winner()
 
     def loop(self):
         self.__logo()
