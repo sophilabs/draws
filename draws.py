@@ -12,7 +12,9 @@ LOGO_SOURCE = 'logo.txt'
 
 class Draw(object):
 
-    def __init__(self, filename):
+    def __init__(self, filename, list_label=None, winner_label=None):
+        self.list_label = list_label or '{name}'
+        self.winner_label = winner_label or '{name} <{email}>'
         self.__start()
         with open(filename) as input:
             self.users = [row for row in csv.DictReader(input)]
@@ -61,7 +63,7 @@ class Draw(object):
     def __winner(self):
         maxh, maxw = self.screen.getmaxyx()
 
-        for i in range(1, self.width - 10)[::2]:
+        for i in range(1, self.width)[::2]:
             h, w = 3, i
             y, x = (maxh - h) / 2 + self.offset_y, (maxw - w) / 2 + self.offset_x
             box = curses.newwin(h, w, y, x)
@@ -70,7 +72,8 @@ class Draw(object):
             time.sleep(0.01)
 
         self.users = [user for user in self.users if user != self.winner]
-        box.addstr(1, 1, self.winner['name'])
+        label = self.winner_label.format(**self.winner).center(self.width - 4, ' ')
+        box.addstr(1, 1, label)
         box.refresh()
 
     def __logo(self):
@@ -83,7 +86,8 @@ class Draw(object):
     def __print(self):
         for i in range(self.lines):
             winner = self.users[(self.start + i) % len(self.users)]
-            self.box.addstr(i + 1, 1, winner['name'].center(self.width, ' '), self.active_color if self.active_line == i else self.color)
+            label = self.list_label.format(**winner).center(self.width, ' ')
+            self.box.addstr(i + 1, 1, label, self.active_color if self.active_line == i else self.color)
             if self.active_line == i:
                 self.winner = winner
         self.box.refresh()
@@ -118,4 +122,4 @@ class Draw(object):
 
 
 if __name__ == '__main__':
-    Draw(sys.argv[1]).loop()
+    Draw(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None, sys.argv[3] if len(sys.argv) > 3 else None).loop()
