@@ -6,6 +6,9 @@ import csv
 import time
 
 
+LOGO_SOURCE = 'logo.txt'
+
+
 class Draw(object):
 
     def __init__(self, filename):
@@ -17,6 +20,13 @@ class Draw(object):
         self.lines = 15
         self.active_line = int(self.lines / 2)
         self.width = 30
+
+        self.offset_x = 0
+        self.offset_y = 4
+
+        logo = open(LOGO_SOURCE)
+        self.logo = logo.readlines()
+        logo.close()
 
     def __start(self):
         screen = curses.initscr()
@@ -39,12 +49,20 @@ class Draw(object):
 
     def __box(self):
         maxh, maxw = self.screen.getmaxyx()
+
         h, w = self.lines + 2, self.width + 2
-        y, x = (maxh - h) / 2, (maxw - w) / 2
+        y, x = (maxh - h) / 2 + self.offset_y, (maxw - w) / 2 + self.offset_x
         box = curses.newwin(h, w, y, x)
         box.box()
         box.refresh()
         self.box = box
+
+    def __logo(self):
+        maxh, maxw = self.screen.getmaxyx()
+        x = maxw / 2 - len(self.logo[0]) / 2
+        for i, line in enumerate(self.logo):
+            self.screen.addstr(i + 1, x, line.center(self.width, ' '))
+        self.screen.refresh()
 
     def __print(self):
         for i in range(self.lines):
@@ -60,6 +78,7 @@ class Draw(object):
             time.sleep(0.01 if selected > 10 else 0.1)
 
     def loop(self):
+        self.__logo()
         self.__box()
         self.__print()
         try:
