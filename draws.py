@@ -4,6 +4,7 @@ import sys
 import random
 import csv
 import time
+import math
 
 
 LOGO_SOURCE = 'logo.txt'
@@ -19,7 +20,7 @@ class Draw(object):
         self.start = 0
         self.lines = 15
         self.active_line = int(self.lines / 2)
-        self.width = 30
+        self.width = 59
 
         self.offset_x = 0
         self.offset_y = 4
@@ -57,6 +58,20 @@ class Draw(object):
         box.refresh()
         self.box = box
 
+    def __winner(self, name):
+        maxh, maxw = self.screen.getmaxyx()
+
+        for i in range(1, self.width - 10)[::2]:
+            h, w = 3, i
+            y, x = (maxh - h) / 2 + self.offset_y, (maxw - w) / 2 + self.offset_x
+            box = curses.newwin(h, w, y, x)
+            box.box()
+            box.refresh()
+            time.sleep(0.01)
+
+        box.addstr(1, 1, name)
+        box.refresh()
+
     def __logo(self):
         maxh, maxw = self.screen.getmaxyx()
         x = maxw / 2 - len(self.logo[0]) / 2
@@ -66,16 +81,28 @@ class Draw(object):
 
     def __print(self):
         for i in range(self.lines):
-            self.box.addstr(i + 1, 1, self.users[(self.start + i) % len(self.users)]['name'].center(self.width, ' '), self.active_color if self.active_line == i else self.color)
+            winner_name = self.users[(self.start + i) % len(self.users)]['name']
+            self.box.addstr(i + 1, 1, winner_name.center(self.width, ' '), self.active_color if self.active_line == i else self.color)
+            if self.active_line == i:
+                self.winner_name = winner_name
         self.box.refresh()
 
     def __draw(self):
         selected = len(self.users) * 5 + random.randrange(len(self.users)) - self.active_line
+
+        total = selected
+
         while selected > 0:
             self.start += 1
             selected -= 1
             self.__print()
-            time.sleep(0.01 if selected > 10 else 0.1)
+
+            speed = math.sqrt(selected)
+            if speed > 0:
+                time.sleep(1 / speed / 10)
+
+        time.sleep(1)
+        self.__winner(self.winner_name)
 
     def loop(self):
         self.__logo()
