@@ -5,14 +5,12 @@ import random
 import csv
 import time
 import math
-
-
-LOGO_SOURCE = 'logo.txt'
+import argparse
 
 
 class Draw(object):
 
-    def __init__(self, filename, list_label=None, winner_label=None):
+    def __init__(self, filename, list_label=None, winner_label=None, logo=None):
         self.list_label = list_label or '{name}'
         self.winner_label = winner_label or '{name} <{email}>'
         self.__start()
@@ -27,9 +25,11 @@ class Draw(object):
         self.offset_x = 0
         self.offset_y = 4
 
-        logo = open(LOGO_SOURCE)
-        self.logo = logo.readlines()
-        logo.close()
+        self.logo = None
+        if logo:
+            slogo = open(logo)
+            self.logo = slogo.readlines()
+            slogo.close()
 
     def __start(self):
         screen = curses.initscr()
@@ -77,6 +77,8 @@ class Draw(object):
         box.refresh()
 
     def __logo(self):
+        if not self.logo:
+            return
         maxh, maxw = self.screen.getmaxyx()
         x = maxw / 2 - len(self.logo[0]) / 2
         for i, line in enumerate(self.logo):
@@ -122,4 +124,10 @@ class Draw(object):
 
 
 if __name__ == '__main__':
-    Draw(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None, sys.argv[3] if len(sys.argv) > 3 else None).loop()
+    parser = argparse.ArgumentParser(description='Draw.')
+    parser.add_argument('filename', metavar='FILENAME', type=str,
+                        help='CSV filename')
+    parser.add_argument('--winner-label', help='Winner label')
+    parser.add_argument('--list-label', help='List label')
+    parser.add_argument('--logo', help='Logo filename')
+    Draw(**vars(parser.parse_args())).loop()
