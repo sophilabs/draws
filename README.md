@@ -1,5 +1,7 @@
 # Draws
 
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
 Take a file containing comma separated values and pick a winner in a stylish way.
 We made this to automate the draw that took place at the end of PyConUy 2013.
 
